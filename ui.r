@@ -10,7 +10,7 @@ vars <- c(
 )
 
 
-navbarPage("Superzip", id="nav",
+navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
            
            tabPanel("Interactive map",
                     div(class="outer",
@@ -29,7 +29,7 @@ navbarPage("Superzip", id="nav",
                                       draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto",
                                       width = 330, height = "auto",
                                       
-                                      h2("ZIP explorer"),
+                                      h2("Acidsoils explorer"),
                                       
                                       selectInput("color", "Color", vars),
                                       selectInput("size", "Size", vars, selected = "adultpop"),
@@ -43,7 +43,7 @@ navbarPage("Superzip", id="nav",
                         ),
                         
                         tags$div(id="cite",
-                                 'Data compiled for ', tags$em('Coming Apart: The State of White America, 1960–2010'), ' by Charles Murray (Crown Forum, 2012).'
+                                 'Data compiled for ', tags$em('Acis soils in Sub-Saharan Africa Project'), ' by Sebastian Palmas.'
                         )
                     )
            ),

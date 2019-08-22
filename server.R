@@ -4,6 +4,9 @@ library(scales)
 library(lattice)
 library(dplyr)
 
+library(jsonlite)
+#library(rgdal)
+
 # Leaflet bindings are a bit slow; for now we'll just sample to compensate
 set.seed(100)
 zipdata <- allzips[sample.int(nrow(allzips), 10000),]
@@ -11,18 +14,27 @@ zipdata <- allzips[sample.int(nrow(allzips), 10000),]
 # will be drawn last and thus be easier to see
 zipdata <- zipdata[order(zipdata$centile),]
 
+# SSA Shapefile definition ###########################################
+
+SSAgeojson <- jsonlite::fromJSON("data/SSA_LSIB7a_gen_polygons.geojson")
+#SSAgeojson <- readOGR("data/SSA_LSIB7a_gen_polygons.geojson")
+
+# Server function ###########################################
 function(input, output, session) {
   
   ## Interactive Map ###########################################
   
-  # Create the map
+  #### Create the map ####
   output$map <- renderLeaflet({
     leaflet() %>%
-      addTiles(
-        urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
-        attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>'
-      ) %>%
-      setView(lng = -93.85, lat = 37.45, zoom = 4)
+      addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/acidsoilsBlended/{z}/{x}/{y}",  #
+               attribution = 'Maps by <a href="http://www.cimmyt.org/">CIMMYT</a>') %>%
+      addGeoJSON(SSAgeojson,
+                 weight = 1,
+                 color = "#555555",
+                 #opacity = 1,
+                 fillOpacity = 0.8 ) %>% 
+      setView(lng = 18, lat = -5, zoom = 3)  #starting view
   })
   
   # A reactive expression that returns the set of zips that are
