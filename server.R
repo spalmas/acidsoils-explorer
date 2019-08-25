@@ -7,7 +7,10 @@ library(dplyr)
 library(jsonlite)   #to deal with the geojson map file
 
 # SSA Shapefile definition ###########################################
-SSAgeojson <- jsonlite::fromJSON("data/SSA_LSIB7a_gen_polygons.geojson")
+#SSAgeojson <- jsonlite::fromJSON("data/SSA_LSIB7a_gen_polygons.geojson")
+SSAgeojson <- geojsonio::geojson_read(x = "data/SSA_LSIB7a_gen_polygons.geojson", what = 'sp')
+
+#plot(SSAgeojson)
 #SSAgeojson <- readOGR("data/SSA_LSIB7a_gen_polygons.geojson")
 
 # Server function ###########################################
@@ -17,14 +20,11 @@ function(input, output, session) {
   
   #### Create the map ####
   output$map <- renderLeaflet({
-    leaflet() %>%
+    leaflet(SSAgeojson) %>%
       addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/acidsoilsBlended/{z}/{x}/{y}",  #
                attribution = 'Maps by <a href="http://www.cimmyt.org/">CIMMYT</a>') %>%
-      addGeoJSON(SSAgeojson,
-                 weight = 1,
-                 color = "#555555",
-                 #opacity = 1,
-                 fillOpacity = 0.8 ) %>% 
+      #addGeoJSON(geojson = SSAgeojson, color = 'red') %>% 
+      addPolygons() %>% 
       setView(lng = 18, lat = -5, zoom = 3)  #starting view
   })
   
@@ -53,14 +53,13 @@ function(input, output, session) {
       scale_y_continuous(labels = scales::percent_format(accuracy = 1))
   })
   
-  output$scatterCollegeIncome <- renderPlot({
-    # If no zipcodes are in view, don't plot
-    if (nrow(zipsInBounds()) == 0)
-      return(NULL)
-    
-    print(xyplot(income ~ college, data = zipsInBounds(), xlim = range(allzips$college), ylim = range(allzips$income)))
-  })
-  
+  # output$scatterCollegeIncome <- renderPlot({
+  #   # If no zipcodes are in view, don't plot
+  #   if (nrow(zipsInBounds()) == 0)
+  #     return(NULL)
+  #   print(xyplot(income ~ college, data = zipsInBounds(), xlim = range(allzips$college), ylim = range(allzips$income)))
+  # })
+  # 
   # This observer is responsible for maintaining the circles and legend,
   # according to the variables the user has chosen to map to color and size.
   # observe({
