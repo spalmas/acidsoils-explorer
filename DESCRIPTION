@@ -1,0 +1,7 @@
+Title: SSA-acidsoils explorer
+License: MIT
+DisplayMode: Normal
+Author: Sebastian Palmas <s.palmas@cgiar.org>
+AuthorUrl: http://www.cimmyt.org/
+Type: Shiny
+Tags: leaflet selectize datatables absolutepanel

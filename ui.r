@@ -9,6 +9,13 @@ vars <- c(
   "Population" = "adultpop"
 )
 
+#Example locations to zoom
+examples <- c(
+  "Western Kenya" = "kenya",
+  "Rwanda, Congo" = "rwanda",
+  "Southern Nigeria" = "nigeria"
+)
+
 
 navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
            
@@ -30,10 +37,12 @@ navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
                                       width = 330, height = "auto",
                                       
                                       h2("Acidsoils explorer"),
-                                      
                                       selectInput("color", "Color", vars),
-                                      selectInput("size", "Size", vars, selected = "adultpop"),
-                                      conditionalPanel("input.color == 'superzip' || input.size == 'superzip'",
+                                      
+                                      h3("Visit Example locations"),
+                                      selectInput(inputId="location",label="", choices=examples, selected = "kenya"),
+                                      
+                                      conditionalPanel(condition = "input.color == 'superzip' || input.location == 'superzip'",
                                                        # Only prompt for threshold when coloring or sizing by superzip
                                                        numericInput("threshold", "SuperZIP threshold (top n percentile)", 5)
                                       ),
@@ -47,34 +56,29 @@ navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
                         )
                     )
            ),
-           
-           tabPanel("Data explorer",
-                    fluidRow(
-                      column(3,
-                             selectInput("states", "States", c("All states"="", structure(state.abb, names=state.name), "Washington, DC"="DC"), multiple=TRUE)
-                      ),
-                      column(3,
-                             conditionalPanel("input.states",
-                                              selectInput("cities", "Cities", c("All cities"=""), multiple=TRUE)
-                             )
-                      ),
-                      column(3,
-                             conditionalPanel("input.states",
-                                              selectInput("zipcodes", "Zipcodes", c("All zipcodes"=""), multiple=TRUE)
-                             )
-                      )
-                    ),
-                    fluidRow(
-                      column(1,
-                             numericInput("minScore", "Min score", min=0, max=100, value=0)
-                      ),
-                      column(1,
-                             numericInput("maxScore", "Max score", min=0, max=100, value=100)
-                      )
-                    ),
-                    hr(),
-                    DT::dataTableOutput("ziptable")
-           ),
+           # 
+           # tabPanel("Data explorer",
+           #          fluidRow(
+           #            column(3,
+           #                   selectInput("states", "States", c("All states"="", structure(state.abb, names=state.name), "Washington, DC"="DC"), multiple=TRUE)),
+           #            column(3,
+           #                   conditionalPanel("input.states",
+           #                                    selectInput("cities", "Cities", c("All cities"=""), multiple=TRUE))),
+           #            column(3,
+           #                   conditionalPanel("input.states",
+           #                                    selectInput("zipcodes", "Zipcodes", c("All zipcodes"=""), multiple=TRUE)))
+           #          ),
+           #          fluidRow(
+           #            column(1,
+           #                   numericInput("minScore", "Min score", min=0, max=100, value=0)
+           #            ),
+           #            column(1,
+           #                   numericInput("maxScore", "Max score", min=0, max=100, value=100)
+           #            )
+           #          ),
+           #          hr(),
+           #          DT::dataTableOutput("ziptable")
+           # ),
            
            conditionalPanel("false", icon("crosshair"))
 )
