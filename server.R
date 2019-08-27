@@ -1,14 +1,24 @@
 library(leaflet)
 library(RColorBrewer)
 library(scales)
-library(ggplot2)
-library(dplyr)
-
-library(jsonlite)   #to deal with the geojson map file
+library(tidyverse)
+#library(geojsonio)   #to deal with the geojson map file
 
 # SSA Shapefile definition ###########################################
 #SSAgeojson <- jsonlite::fromJSON("data/SSA_LSIB7a_gen_polygons.geojson")
 SSAgeojson <- geojsonio::geojson_read(x = "data/SSA_LSIB7a_gen_polygons.geojson", what = 'sp')
+
+# Colors for plotting ###########################################
+mycols <- c("#FF6B00", "#F7A84D", "#EEE49A", "#A77A6D", '#5F0F40')
+
+#start of selected country. SSA
+selected_country_co <- "SSA"
+
+
+#Color factor for legend
+myfactors <- data.frame(labels = c("Highly acidic (<5.6)", "Slightly acidic (5.6-6.5)", "Optimal (6.6-7.3)", "Slightly alkaline (7.4-7.8)", "Highly alkaline (>7.8)"),
+                        ranges = c("<5.6", "5.6-6.5", "6.6-7.3", "7.4-7.8", ">7.8"))
+qpal <- colorFactor(palette = mycols, domain = myfactors$labels)
 
 #plot(SSAgeojson)
 #SSAgeojson <- readOGR("data/SSA_LSIB7a_gen_polygons.geojson")
@@ -24,9 +34,35 @@ function(input, output, session) {
       addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/acidsoilsBlended/{z}/{x}/{y}",  #
                attribution = 'Maps by <a href="http://www.cimmyt.org/">CIMMYT</a>') %>%
       #addGeoJSON(geojson = SSAgeojson, color = 'red') %>% 
-      addPolygons() %>% 
-      setView(lng = 18, lat = -5, zoom = 3)  #starting view
+      addPolygons(layerId=~country_co,
+                  color = "#55565A",
+                  weight = 0.5,
+                  fillColor = "#FFFFFF",
+                  opacity = 0.5,
+                  label = ~paste0(country_na),  #what to show 
+                  highlightOptions = highlightOptions(color = "#FF6B00",
+                                                      weight = 2,
+                                                      bringToFront = TRUE)) %>%  #starting view
+      addLegend("bottomleft", pal = qpal, values = myfactors$labels, title = "pH level", opacity = 1)
   })
+  
+  # A reactive expression that returns the coordinates of the selected example location
+  center <- reactive({
+    subset(examples_coordinates, country_co == input$location) 
+  })
+  
+  # set the new coordinates to the coorindates for that center
+  observe({
+    leafletProxy('map') %>% 
+      setView(lng =  center()$long, lat = center()$lat, zoom = center()$zoom)
+  })
+  
+  #Observing click event on map (See that map_shape_click is sensitive to the name of the map. In this case is "map". Naming it Map would require Map_click_event)
+  #observeEvent(eventExpr = input$map_shape_click, { 
+  #  selected_country_co <- input$map_shape_click$`id`
+  #  #print(selected_country_co)
+  #})
+  
   
   # A reactive expression that returns the set of zips that are in bounds right now
   # zipsInBounds <- reactive({
@@ -44,14 +80,58 @@ function(input, output, session) {
   # Precalculate the breaks we'll need for the two histograms
   # centileBreaks <- hist(plot = FALSE, allzips$centile, breaks = 20)$breaks
   
-  output$histCentile <- renderPlot({
-    # If no zipcodes are in view, don't plot
-    topallcountries <- allcountries[order(allcountries$AcidCroplandPerc, decreasing = TRUE),]
-    topallcountries <- topallcountries[1:10,]
-    ggplot(data = topallcountries, aes(x =reorder(country_co, -AcidCroplandPerc) , y = AcidCroplandPerc)) +
-      geom_bar(stat = "identity") +
-      scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+  output$selected_country <- renderText({
+    if (length(input$map_shape_click$`id`) == 0){
+      selected_country_co <- "SSA"  #default value
+    } else {
+      selected_country_co <- input$map_shape_click$`id`
+    }
+    allcountries[allcountries$country_co == selected_country_co, "country_na"] %>% as.character()
   })
+    
+  
+  output$cropland_plot <- renderPlot({
+    #Subsetting data to selected country
+    if (length(input$map_shape_click$`id`) == 0){
+      selected_country_co <- "SSA"  #default value
+    } else {
+      selected_country_co <- input$map_shape_click$`id`
+    }
+    cropland_data <- allcountries %>% filter(country_co == selected_country_co) %>% dplyr::select(OptimalCroplandArea, AcidCroplandArea) %>% gather()
+    
+    #Creating plot
+    ggplot(cropland_data, aes(x = "", y = value, fill = key)) +
+      geom_bar(width = 1, stat = "identity") +
+      coord_polar("y", start = 0)+
+      geom_text(aes(label = value), color = "white")+
+      scale_fill_manual(values = mycols) +
+      theme_void() + 
+      ggtitle('Cropland area') + 
+      theme(plot.title = element_text(colour = "gray", size=14))
+  })
+  
+  output$pop_plot <- renderPlot({
+    #Subsetting data to selected country
+    if (length(input$map_shape_click$`id`) == 0){
+      selected_country_co <- "SSA"  #default value
+    } else {
+      selected_country_co <- input$map_shape_click$`id`
+    }
+    #Subsetting data to selected country
+    pop_data <- allcountries %>% filter(country_co == selected_country_co) %>% dplyr::select(OptimalCroplandPop , AcidCroplandPop) %>% gather()
+    
+    #Creating plot
+    ggplot(pop_data, aes(x = "", y = value, fill = key)) +
+      geom_bar(width = 1, stat = "identity", color = "white") +
+      coord_polar("y", start = 0)+
+      geom_text(aes(label = value), color = "white")+
+      scale_fill_manual(values = mycols) +
+      theme_void() +
+      ggtitle('Population') + 
+      theme(plot.title = element_text(colour = "gray", size=14))
+
+  })
+  
   
   # output$scatterCollegeIncome <- renderPlot({
   #   # If no zipcodes are in view, don't plot

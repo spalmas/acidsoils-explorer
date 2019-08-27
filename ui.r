@@ -9,14 +9,6 @@ vars <- c(
   "Population" = "adultpop"
 )
 
-#Example locations to zoom
-examples <- c(
-  "Western Kenya" = "kenya",
-  "Rwanda, Congo" = "rwanda",
-  "Southern Nigeria" = "nigeria"
-)
-
-
 navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
            
            tabPanel("Interactive map",
@@ -37,17 +29,14 @@ navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
                                       width = 330, height = "auto",
                                       
                                       h2("Acidsoils explorer"),
-                                      selectInput("color", "Color", vars),
+                                      h4("This is an explorer of soil acidity levels in sub-Saharan Africa.
+                                         For more information see ", tags$a(href="www.cimmyt.org", "CIMMYT")),
                                       
-                                      h3("Visit Example locations"),
-                                      selectInput(inputId="location",label="", choices=examples, selected = "kenya"),
+                                      selectInput(inputId="location",label="Visit Example Locations", choices=examples, selected = "SSA"),
                                       
-                                      conditionalPanel(condition = "input.color == 'superzip' || input.location == 'superzip'",
-                                                       # Only prompt for threshold when coloring or sizing by superzip
-                                                       numericInput("threshold", "SuperZIP threshold (top n percentile)", 5)
-                                      ),
-                                      
-                                      plotOutput("histCentile", height = 200),
+                                      textOutput("selected_country"),
+                                      plotOutput("cropland_plot", height = 200),
+                                      plotOutput("pop_plot", height = 200),
                                       plotOutput("scatterCollegeIncome", height = 250)
                         ),
                         
