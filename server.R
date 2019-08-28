@@ -11,13 +11,17 @@ SSAgeojson <- geojsonio::geojson_read(x = "data/SSA_LSIB7a_gen_polygons.geojson"
 # Colors for plotting ###########################################
 mycols <- c("#FF6B00", "#F7A84D", "#EEE49A", "#A77A6D", '#5F0F40')
 
-#start of selected country. SSA
-selected_country_co <- "SSA"
-
+#Coordinate examples 
+examples_coordinates <- data.frame(country_co = c("SSA", "W_KE", "S_NI", "RW"),
+                                   lat = c(-7, -0.27, 4.63, -2.08),
+                                   long = c(20, 34.51, 7.84, 29.72),
+                                   zoom = c(4, 8,8,8))
 
 #Color factor for legend
 myfactors <- data.frame(labels = c("Highly acidic (<5.6)", "Slightly acidic (5.6-6.5)", "Optimal (6.6-7.3)", "Slightly alkaline (7.4-7.8)", "Highly alkaline (>7.8)"),
+                        labels2 = c("Highly acidic", "Slightly acidic", "Optimal", "Slightly alkaline", "Highly alkaline"),
                         ranges = c("<5.6", "5.6-6.5", "6.6-7.3", "7.4-7.8", ">7.8"))
+myfactors$labels <- factor(myfactors$labels, levels = c("Highly acidic (<5.6)", "Slightly acidic (5.6-6.5)", "Optimal (6.6-7.3)", "Slightly alkaline (7.4-7.8)", "Highly alkaline (>7.8)"))
 qpal <- colorFactor(palette = mycols, domain = myfactors$labels)
 
 #plot(SSAgeojson)
@@ -80,16 +84,17 @@ function(input, output, session) {
   # Precalculate the breaks we'll need for the two histograms
   # centileBreaks <- hist(plot = FALSE, allzips$centile, breaks = 20)$breaks
   
+  ## Country name to show ###########################################
   output$selected_country <- renderText({
     if (length(input$map_shape_click$`id`) == 0){
       selected_country_co <- "SSA"  #default value
     } else {
       selected_country_co <- input$map_shape_click$`id`
     }
-    allcountries[allcountries$country_co == selected_country_co, "country_na"] %>% as.character()
+    country_names[country_names$country_co == selected_country_co, "country_na"] %>% as.character()
   })
     
-  
+  ## Crop areas pie chart ###########################################
   output$cropland_plot <- renderPlot({
     #Subsetting data to selected country
     if (length(input$map_shape_click$`id`) == 0){
@@ -97,19 +102,30 @@ function(input, output, session) {
     } else {
       selected_country_co <- input$map_shape_click$`id`
     }
-    cropland_data <- allcountries %>% filter(country_co == selected_country_co) %>% dplyr::select(OptimalCroplandArea, AcidCroplandArea) %>% gather()
+    cropareas_country <- cropareas %>% filter(country_co == selected_country_co)
+    croparea_country <- sum(cropareas_country$area_km)
     
     #Creating plot
-    ggplot(cropland_data, aes(x = "", y = value, fill = key)) +
+    ggplot(cropareas_country, aes(x = ph_class, y = area_km, fill = ph_class)) +
       geom_bar(width = 1, stat = "identity") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(label = value), color = "white")+
+      geom_text(data = cropareas_country,
+                aes(x = ph_class, y = area_km,
+                    label = paste0(comma(round(area_km))," (", percent(area_km/croparea_country), ")"),
+                    hjust=ifelse(area_km < max(cropareas_country$area_km) / 1.5, -0.1, 1.1)),
+                color = "#55565A", )+
       scale_fill_manual(values = mycols) +
-      theme_void() + 
-      ggtitle('Cropland area') + 
-      theme(plot.title = element_text(colour = "gray", size=14))
+      scale_x_discrete(labels = myfactors$labels2) + 
+      scale_y_continuous(labels = comma) + 
+      ggtitle('Cropland area') + ylab(expression(Area ~ (km^2))) + xlab("") +
+      theme_minimal() + 
+      theme(plot.title = element_text(colour = "#55565A", size=14),
+            panel.grid.major.y = element_blank(),
+            panel.grid.minor.y = element_blank(),
+            legend.position = "none") +
+      coord_flip()
   })
   
+  ## Population pie chart ###########################################
   output$pop_plot <- renderPlot({
     #Subsetting data to selected country
     if (length(input$map_shape_click$`id`) == 0){
@@ -117,21 +133,25 @@ function(input, output, session) {
     } else {
       selected_country_co <- input$map_shape_click$`id`
     }
-    #Subsetting data to selected country
-    pop_data <- allcountries %>% filter(country_co == selected_country_co) %>% dplyr::select(OptimalCroplandPop , AcidCroplandPop) %>% gather()
+    cropareas_country <- cropareas %>% filter(country_co == selected_country_co)
+    croparea_country <- sum(cropareas_country$area_km)
     
     #Creating plot
-    ggplot(pop_data, aes(x = "", y = value, fill = key)) +
-      geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(label = value), color = "white")+
+    ggplot(cropareas_country, aes(x = ph_class, y = area_km, fill = ph_class)) +
+      geom_bar(width = 1, stat = "identity") +
+      geom_text(aes(label = paste0(comma(round(area_km)), " km2 \n (", percent(area_km/croparea_country), ")")),
+                color = "#55565A")+
       scale_fill_manual(values = mycols) +
-      theme_void() +
-      ggtitle('Population') + 
-      theme(plot.title = element_text(colour = "gray", size=14))
-
+      scale_x_discrete(labels = myfactors$labels2) + 
+      scale_y_continuous(labels = comma) + 
+      ggtitle('Cropland area') + ylab(expression(Area (km^2))) + xlab("") +
+      theme_minimal() + 
+      theme(plot.title = element_text(colour = "#55565A", size=14),
+            panel.grid.major.y = element_blank(),
+            panel.grid.minor.y = element_blank(),
+            legend.position = "none") +
+      coord_flip()
   })
-  
   
   # output$scatterCollegeIncome <- renderPlot({
   #   # If no zipcodes are in view, don't plot
