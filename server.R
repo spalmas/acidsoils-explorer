@@ -4,6 +4,12 @@ library(scales)
 library(tidyverse)
 #library(geojsonio)   #to deal with the geojson map file
 
+
+# table in use  ###########################################
+cropareas <- readRDS("data/cropareas.rds")  #crop areas per pH class. see acidsoils repository
+population <- readRDS("data/population.rds")
+country_names <- readRDS("data/country_names.rds")  #country names  see acidsoils repository
+
 # SSA Shapefile definition ###########################################
 #SSAgeojson <- jsonlite::fromJSON("data/SSA_LSIB7a_gen_polygons.geojson")
 SSAgeojson <- geojsonio::geojson_read(x = "data/SSA_LSIB7a_gen_polygons.geojson", what = 'sp')
@@ -35,9 +41,10 @@ function(input, output, session) {
   #### Create the map ####
   output$map <- renderLeaflet({
     leaflet(SSAgeojson) %>%
-      addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/acidsoilsBlended/{z}/{x}/{y}",  #
-               attribution = 'Maps by <a href="http://www.cimmyt.org/">CIMMYT</a>') %>%
-      #addGeoJSON(geojson = SSAgeojson, color = 'red') %>% 
+      addTiles(urlTemplate = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",  #
+               attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>') %>% 
+      addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/acidsoils2Blended/{z}/{x}/{y}",  #
+               attribution = '&copy; <a href="http://www.cimmyt.org/">CIMMYT</a>') %>%
       addPolygons(layerId=~country_co,
                   color = "#55565A",
                   weight = 0.5,
@@ -133,18 +140,21 @@ function(input, output, session) {
     } else {
       selected_country_co <- input$map_shape_click$`id`
     }
-    cropareas_country <- cropareas %>% filter(country_co == selected_country_co)
-    croparea_country <- sum(cropareas_country$area_km)
+    pops_country <- population %>% filter(country_co == selected_country_co) %>% filter(ph_class !="SSApop")
+    pop_country <- sum(pops_country$population)
     
     #Creating plot
-    ggplot(cropareas_country, aes(x = ph_class, y = area_km, fill = ph_class)) +
+    ggplot(pops_country, aes(x = ph_class, y = population, fill = ph_class)) +
       geom_bar(width = 1, stat = "identity") +
-      geom_text(aes(label = paste0(comma(round(area_km)), " km2 \n (", percent(area_km/croparea_country), ")")),
-                color = "#55565A")+
+      geom_text(data = pops_country,
+                aes(x = ph_class, y = population,
+                    label = paste0(comma(population)," (", percent(population/pop_country), ")"),
+                    hjust=ifelse(population < max(pops_country$population) / 1.5, -0.1, 1.1)),
+                color = "#55565A", ) +
       scale_fill_manual(values = mycols) +
       scale_x_discrete(labels = myfactors$labels2) + 
       scale_y_continuous(labels = comma) + 
-      ggtitle('Cropland area') + ylab(expression(Area (km^2))) + xlab("") +
+      ggtitle('Population') + ylab(expression(Population)) + xlab("") +
       theme_minimal() + 
       theme(plot.title = element_text(colour = "#55565A", size=14),
             panel.grid.major.y = element_blank(),

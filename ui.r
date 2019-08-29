@@ -1,15 +1,5 @@
 library(leaflet)
 
-# Choices for drop-downs
-vars <- c(
-  "Is SuperZIP?" = "superzip",
-  "Centile score" = "centile",
-  "College education" = "college",
-  "Median income" = "income",
-  "Population" = "adultpop"
-)
-
-
 #Example locations to zoom and coordinates
 examples <- c(
   "Continent view" = "SSA",
@@ -29,8 +19,8 @@ navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
                           includeCSS("styles.css"),
                           includeScript("gomap.js")
                         ),
-
-                                                #### The interactive Map ####
+                        
+                        #### The interactive Map ####
                         # If not using custom CSS, set height of leafletOutput to a number instead of percent
                         leafletOutput(outputId = "map", width="100%", height="100%"),
                         
@@ -40,12 +30,12 @@ navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
                                       width = 450, height = "auto",
                                       
                                       h3("Explorer of soil acidity in SSA croplands"),
-                                      h5("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Dolor sed viverra ipsum nunc aliquet bibendum enim. In massa tempor nec feugiat. Nunc aliquet bibendum enim facilisis gravida. Nisl nunc mi ipsum faucibus vitae aliquet nec ullamcorper. Amet luctus venenatis lectus magna fringilla. Volutpat maecenas volutpat blandit aliquam etiam erat velit scelerisque in."),
+                                      h5("Acid soils cover more than a third of Subsaharan Africa, affecting agricultural productivity"),
                                       div(class = "selected_country", textOutput("selected_country")),
                                       plotOutput("cropland_plot", height = 200),
                                       plotOutput("pop_plot", height = 200),
                                       selectInput(inputId="location",label="Visit Example Locations", choices=examples, selected = "SSA"),
-                                      tags$a(tags$img(src="CIMMYTlogo.png", height="05%", align = "center", href="www.cimmyt.org"),href="https://www.cimmyt.org"),
+                                      tags$a(tags$img(src="CIMMYTlogo.png", height="5%", align = "center", href="www.cimmyt.org"),href="https://www.cimmyt.org"),
                                       h6("Data compiled for the Soils in Sub-Saharan Africa Project by Sebastian Palmas. For more information see ", tags$a(href="https://www.cimmyt.org", "CIMMYT"))
                         )
                         
