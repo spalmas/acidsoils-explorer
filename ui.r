@@ -28,7 +28,6 @@ navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
                         absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
                                       draggable = FALSE, top = 60, left = "auto", right = 20, bottom = 20,
                                       width = 450, height = "auto",
-                                      
                                       h3("Explorer of soil acidity in SSA croplands"),
                                       h5("Acid soils cover more than a third of Subsaharan Africa, affecting agricultural productivity"),
                                       div(class = "selected_country", textOutput("selected_country")),
@@ -36,34 +35,11 @@ navbarPage("Explorer of soil acidity in SSA croplands", id="nav",
                                       plotOutput("pop_plot", height = 200),
                                       selectInput(inputId="location",label="Visit Example Locations", choices=examples, selected = "SSA"),
                                       tags$a(tags$img(src="CIMMYTlogo.png", height="5%", align = "center", href="www.cimmyt.org"),href="https://www.cimmyt.org"),
-                                      h6("Data compiled for the Soils in Sub-Saharan Africa Project by Sebastian Palmas. For more information see ", tags$a(href="https://www.cimmyt.org", "CIMMYT"))
+                                      includeHTML("notes.html")  #notes at the bottom of the panel
                         )
-                        
                     )
            ),
-           # 
-           # tabPanel("Data explorer",
-           #          fluidRow(
-           #            column(3,
-           #                   selectInput("states", "States", c("All states"="", structure(state.abb, names=state.name), "Washington, DC"="DC"), multiple=TRUE)),
-           #            column(3,
-           #                   conditionalPanel("input.states",
-           #                                    selectInput("cities", "Cities", c("All cities"=""), multiple=TRUE))),
-           #            column(3,
-           #                   conditionalPanel("input.states",
-           #                                    selectInput("zipcodes", "Zipcodes", c("All zipcodes"=""), multiple=TRUE)))
-           #          ),
-           #          fluidRow(
-           #            column(1,
-           #                   numericInput("minScore", "Min score", min=0, max=100, value=0)
-           #            ),
-           #            column(1,
-           #                   numericInput("maxScore", "Max score", min=0, max=100, value=100)
-           #            )
-           #          ),
-           #          hr(),
-           #          DT::dataTableOutput("ziptable")
-           # ),
-           
+           tabPanel(title = "dumb"),
+                    
            conditionalPanel("false", icon("crosshair"))
 )
