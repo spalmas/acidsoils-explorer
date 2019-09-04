@@ -2,7 +2,13 @@ library(leaflet)
 library(RColorBrewer)
 library(scales)
 library(tidyverse)
-#library(geojsonio)   #to deal with the geojson map file
+#library(extrafont)
+library(waffle)   #for pictogram
+library(hrbrthemes)
+library(fontawesome)
+#font_import()
+#loadfonts(device = "win")
+#extrafont::loadfonts(device="win")
 
 
 # table in use  ###########################################
@@ -151,7 +157,7 @@ function(input, output, session) {
     }
     pops_country <- population %>% filter(country_co == selected_country_co) %>% filter(ph_class !="SSApop")
     pop_country <- sum(pops_country$population)
-    
+   
     #Creating plot
     ggplot(pops_country, aes(x = ph_class, y = population, fill = ph_class)) +
       geom_bar(width = 1, stat = "identity") +
