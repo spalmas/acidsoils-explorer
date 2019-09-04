@@ -2,14 +2,6 @@ library(leaflet)
 library(RColorBrewer)
 library(scales)
 library(tidyverse)
-#library(extrafont)
-library(waffle)   #for pictogram
-library(hrbrthemes)
-library(fontawesome)
-#font_import()
-#loadfonts(device = "win")
-#extrafont::loadfonts(device="win")
-
 
 # table in use  ###########################################
 cropareas <- readRDS("data/cropareas.rds")  #crop areas per pH class. see acidsoils repository
@@ -160,7 +152,7 @@ function(input, output, session) {
    
     #Creating plot
     ggplot(pops_country, aes(x = ph_class, y = population, fill = ph_class)) +
-      geom_bar(width = 1, stat = "identity") +
+      geom_bar(width = 1, stat = "identity", alpha = 0.4) +
       geom_text(data = pops_country,
                 aes(x = ph_class, y = population,
                     label = paste0(comma(population)," (", percent(population/pop_country), ")"),
