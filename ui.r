@@ -1,6 +1,7 @@
 library(shiny)
 library(shinyWidgets)
 library(leaflet)
+library(DT)
 
 # EXAMPLE LOCATIONS TO USE IN THE MENU
 examples <- c(
@@ -50,5 +51,5 @@ navbarPage("Acidic Soils in Sub-Saharan Africa", id="main",
                     DTOutput("acid_crops_summary_bycountry_table", width = "60%"),
                     downloadButton("downloadData", "Download all data")
            ),
-           tabPanel("Read Me",includeMarkdown("readme.md"))
+           tabPanel("Read Me",includeMarkdown("README.md"))
 )
