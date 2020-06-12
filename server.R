@@ -36,7 +36,7 @@ shinyServer(function(input, output, session) {
       addTiles(group = "CartoDB") %>% 
       addProviderTiles(providers$CartoDB.Positron, group = "Map") %>%
       addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
-      addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/acidsoils_tiles_v2_6/{z}/{x}/{y}",  #
+      addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/ph_cropland_class/{z}/{x}/{y}",  #
                attribution = '&copy; <a href="http://www.cimmyt.org/">CIMMYT</a>',
                group = "Soil Acidity") %>%
       addPolygons(layerId=~ISO3166_1,
