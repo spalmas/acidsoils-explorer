@@ -39,7 +39,7 @@ shinyServer(function(input, output, session) {
       addTiles(urlTemplate = "https://storage.googleapis.com/acidsoils-ssa/ph_cropland_class/{z}/{x}/{y}",  #
                attribution = '&copy; <a href="http://www.cimmyt.org/">CIMMYT</a>',
                group = "Soil Acidity") %>%
-      addPolygons(layerId=~ISO3166_1,
+      addPolygons(layerId=~ISO3166_1,  #this is the id that is selected when clicking on the map
                   color = "#55565A", weight = 0.5,
                   fillColor = "#FFFFFF",
                   opacity = 0.5,
@@ -81,7 +81,7 @@ shinyServer(function(input, output, session) {
     } else {
       selected_ISO3166_1 <- input$acidmap_shape_click$`id`
     }
-    country_names[country_names$ISO3166_1 == selected_ISO3166_1, "country_na"] %>% as.character()
+    country_names[country_names$ISO3166_1 == selected_ISO3166_1, "country_na"]
   })
   
   
